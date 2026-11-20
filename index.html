@@ -1,212 +1,304 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hyper-Surge: Multiplier Overdrive</title>
-  <link rel="stylesheet" href="styles.css">
-</head>
-<body>
-  <div id="game-container">
-    <canvas id="gameCanvas"></canvas>
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Hyper-Surge: Multiplier Overdrive</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div id="game-container">
+      <canvas id="gameCanvas"></canvas>
 
-    <!-- UI Overlay Layer -->
-    <div class="ui-layer">
-      <!-- Header HUD -->
-      <div class="hud-header">
-        <div class="score-panel interactive">
-          <div class="score-title">Current Score</div>
-          <div class="score-value" id="scoreVal">0</div>
-          <div class="high-score-val">BEST: <span id="highScoreVal">0</span></div>
+      <!-- UI Overlay Layer -->
+      <div class="ui-layer">
+        <!-- Header HUD -->
+        <div class="hud-header">
+          <div class="score-panel interactive">
+            <div class="score-title">Current Score</div>
+            <div class="score-value" id="scoreVal">0</div>
+            <div class="high-score-val">
+              BEST: <span id="highScoreVal">0</span>
+            </div>
+          </div>
+
+          <!-- Central Multiplier Hub -->
+          <div class="multiplier-hub">
+            <div class="total-multiplier-badge" id="multBadge">
+              <span class="mult-prefix">x</span>
+              <span class="mult-number" id="multNumber">1.0</span>
+            </div>
+            <div class="multiplier-tier-tag" id="tierTag">STANDARD</div>
+
+            <!-- Combo Decay Bar -->
+            <div class="combo-gauge-wrap">
+              <div
+                class="combo-gauge-fill"
+                id="comboFill"
+                style="width: 100%"
+              ></div>
+            </div>
+
+            <!-- Multiplier Stacking Formula Factor Pills -->
+            <div class="multiplier-factors-bar">
+              <div class="factor-pill combo">
+                <span class="pill-name">COMBO</span>
+                <span id="pillCombo">1.0x</span>
+              </div>
+              <span class="factor-x">×</span>
+              <div class="factor-pill zone">
+                <span class="pill-name">ZONE</span>
+                <span id="pillZone">1.0x</span>
+              </div>
+              <span class="factor-x">×</span>
+              <div class="factor-pill surge">
+                <span class="pill-name">SURGE</span>
+                <span id="pillSurge">1.0x</span>
+              </div>
+              <span class="factor-x">×</span>
+              <div class="factor-pill harmony">
+                <span class="pill-name">HARMONY</span>
+                <span id="pillHarmony">1.0x</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Control Action Buttons -->
+          <div class="hud-actions interactive">
+            <button
+              id="autoFireBtn"
+              class="hud-btn"
+              onclick="window.game.toggleAutoFire()"
+            >
+              <span>⚡ Auto-Fire: OFF</span>
+            </button>
+            <button
+              id="soundBtn"
+              class="hud-btn"
+              onclick="window.game.toggleSound()"
+            >
+              <span>🔊 Sound: ON</span>
+            </button>
+            <button
+              id="musicBtn"
+              class="hud-btn"
+              onclick="window.game.toggleMusic()"
+            >
+              <span>🎵 Music: ON</span>
+            </button>
+            <button class="hud-btn" onclick="window.game.openShop()">
+              <span>🛠️ Upgrades [E]</span>
+            </button>
+            <button class="hud-btn" onclick="window.game.openGuide()">
+              <span>📖 Guide</span>
+            </button>
+          </div>
         </div>
 
-        <!-- Central Multiplier Hub -->
-        <div class="multiplier-hub">
-          <div class="total-multiplier-badge" id="multBadge">
-            <span class="mult-prefix">x</span>
-            <span class="mult-number" id="multNumber">1.0</span>
-          </div>
-          <div class="multiplier-tier-tag" id="tierTag">STANDARD</div>
-
-          <!-- Combo Decay Bar -->
-          <div class="combo-gauge-wrap">
-            <div class="combo-gauge-fill" id="comboFill" style="width: 100%;"></div>
+        <!-- Bottom HUD Footer -->
+        <div class="hud-footer">
+          <div class="zone-alert-card interactive">
+            <div class="zone-status-dot" id="zoneStatusDot"></div>
+            <span
+              id="zoneStatusText"
+              style="font-weight: 700; font-family: var(--mono-stack)"
+              >NEUTRAL GRID (1.0x)</span
+            >
           </div>
 
-          <!-- Multiplier Stacking Formula Factor Pills -->
-          <div class="multiplier-factors-bar">
-            <div class="factor-pill combo">
-              <span class="pill-name">COMBO</span>
-              <span id="pillCombo">1.0x</span>
-            </div>
-            <span class="factor-x">×</span>
-            <div class="factor-pill zone">
-              <span class="pill-name">ZONE</span>
-              <span id="pillZone">1.0x</span>
-            </div>
-            <span class="factor-x">×</span>
-            <div class="factor-pill surge">
-              <span class="pill-name">SURGE</span>
-              <span id="pillSurge">1.0x</span>
-            </div>
-            <span class="factor-x">×</span>
-            <div class="factor-pill harmony">
-              <span class="pill-name">HARMONY</span>
-              <span id="pillHarmony">1.0x</span>
+          <div class="powerup-timers" id="powerupTimers"></div>
+
+          <div class="score-panel interactive" style="padding: 8px 16px">
+            <div class="score-title">TIME REMAINING</div>
+            <div
+              class="score-value"
+              id="timerDisplay"
+              style="font-size: 22px; color: #fbbf24"
+            >
+              1:30
             </div>
           </div>
         </div>
+      </div>
 
-        <!-- Control Action Buttons -->
-        <div class="hud-actions interactive">
-          <button id="autoFireBtn" class="hud-btn" onclick="window.game.toggleAutoFire()">
-            <span>⚡ Auto-Fire: OFF</span>
-          </button>
-          <button id="soundBtn" class="hud-btn" onclick="window.game.toggleSound()">
-            <span>🔊 Sound: ON</span>
-          </button>
-          <button id="musicBtn" class="hud-btn" onclick="window.game.toggleMusic()">
-            <span>🎵 Music: ON</span>
-          </button>
-          <button class="hud-btn" onclick="window.game.openShop()">
-            <span>🛠️ Upgrades [E]</span>
-          </button>
-          <button class="hud-btn" onclick="window.game.openGuide()">
-            <span>📖 Guide</span>
+      <!-- Modal: Multiplier Mechanics Guide -->
+      <div class="modal-overlay" id="guideModal">
+        <div class="modal-card">
+          <h2>⚡ Multiplier System Codex</h2>
+          <p class="modal-desc">
+            In <strong>Hyper-Surge</strong>, score multipliers
+            <em>multiply together</em> rather than just adding up! Mastering
+            every system allows you to reach
+            <strong>100x+ to 500x+ Godlike Overdrive</strong>!
+          </p>
+
+          <div class="guide-grid">
+            <div class="guide-item">
+              <div class="guide-item-title" style="color: #38bdf8">
+                ⚡ Combo Velocity
+              </div>
+              <div class="guide-item-val">Up to 10.0x Multiplier</div>
+              <div class="guide-item-text">
+                Each hit adds +0.25x. Keep hitting targets before the decay bar
+                empties to maintain your streak!
+              </div>
+            </div>
+
+            <div class="guide-item">
+              <div class="guide-item-title" style="color: #f43f5e">
+                🌀 Danger Vortex Zones
+              </div>
+              <div class="guide-item-val">2.5x - 4.0x Multiplier</div>
+              <div class="guide-item-text">
+                High-risk glowing arenas. Enter the red or gold vortex fields to
+                multiply all points scored while inside!
+              </div>
+            </div>
+
+            <div class="guide-item">
+              <div class="guide-item-title" style="color: #10b981">
+                🔄 Ricochet Wall Bounces
+              </div>
+              <div class="guide-item-val">+0.5x per Bounce</div>
+              <div class="guide-item-text">
+                Your energy bolts ricochet off the perimeter borders. Trick
+                shots that hit after bouncing grant stacking bounce multipliers!
+              </div>
+            </div>
+
+            <div class="guide-item">
+              <div class="guide-item-title" style="color: #fbbf24">
+                🎯 Bullseye Precision
+              </div>
+              <div class="guide-item-val">2.0x - 3.5x Multiplier</div>
+              <div class="guide-item-text">
+                Strike the glowing white core in the exact center of any target
+                to trigger a critical bullseye score explosion!
+              </div>
+            </div>
+
+            <div class="guide-item">
+              <div class="guide-item-title" style="color: #c084fc">
+                💎 Color Harmony Chain
+              </div>
+              <div class="guide-item-val">Up to 4.0x Multiplier</div>
+              <div class="guide-item-text">
+                Destroy matching color targets in sequence (Cyan, Void, Amber)
+                or hit rare Rainbow Prisms for instant maximum harmony!
+              </div>
+            </div>
+
+            <div class="guide-item">
+              <div class="guide-item-title" style="color: #f59e0b">
+                🚀 Overdrive Surge Cores
+              </div>
+              <div class="guide-item-val">2x, 3x, 5x Supernova</div>
+              <div class="guide-item-text">
+                Collect floating cores to unleash temporary hyper multipliers
+                with full audio-visual screen overload.
+              </div>
+            </div>
+          </div>
+
+          <button class="modal-btn" onclick="window.game.closeGuide()">
+            Resume Game
           </button>
         </div>
       </div>
 
-      <!-- Bottom HUD Footer -->
-      <div class="hud-footer">
-        <div class="zone-alert-card interactive">
-          <div class="zone-status-dot" id="zoneStatusDot"></div>
-          <span id="zoneStatusText" style="font-weight: 700; font-family: var(--mono-stack);">NEUTRAL GRID (1.0x)</span>
+      <!-- Modal: Multiplier Upgrades & Perk Shop -->
+      <div class="modal-overlay" id="shopModal">
+        <div class="modal-card">
+          <div
+            style="
+              display: flex;
+              justify-content: space-between;
+              align-items: baseline;
+            "
+          >
+            <h2>🛠️ Multiplier Overclock Shop</h2>
+            <div
+              style="
+                font-family: var(--mono-stack);
+                color: #fbbf24;
+                font-weight: 800;
+                font-size: 15px;
+              "
+            >
+              💎 <span id="shopShardsVal">0</span> Shards
+            </div>
+          </div>
+          <p class="modal-desc">
+            Shards are extracted when you eliminate targets with high multiplier
+            combos. Spend them to permanently upgrade your multiplier engines!
+          </p>
+
+          <div class="shop-items-list" id="shopList"></div>
+
+          <button class="modal-btn" onclick="window.game.closeShop()">
+            Back to Action
+          </button>
         </div>
+      </div>
 
-        <div class="powerup-timers" id="powerupTimers"></div>
+      <!-- Modal: Game Over / Run Results -->
+      <div class="modal-overlay" id="gameOverModal">
+        <div class="modal-card" style="text-align: center">
+          <h2>⚡ RUN COMPLETED</h2>
+          <p class="modal-desc">
+            Multiplier overdrive cycle concluded. Here is your combat analysis:
+          </p>
 
-        <div class="score-panel interactive" style="padding: 8px 16px;">
-          <div class="score-title">TIME REMAINING</div>
-          <div class="score-value" id="timerDisplay" style="font-size: 22px; color: #fbbf24;">1:30</div>
+          <div
+            class="score-value"
+            id="finalScoreVal"
+            style="font-size: 48px; color: #38bdf8; margin: 10px 0"
+          >
+            0
+          </div>
+
+          <div class="stats-grid">
+            <div class="stat-box">
+              <div class="stat-label">Peak Multiplier</div>
+              <div class="stat-val" id="finalMaxMult" style="color: #f43f5e">
+                1.0x
+              </div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Critical Crits</div>
+              <div class="stat-val" id="finalCrits" style="color: #fbbf24">
+                0
+              </div>
+            </div>
+            <div class="stat-box">
+              <div class="stat-label">Ricochet Hits</div>
+              <div class="stat-val" id="finalBounces" style="color: #10b981">
+                0
+              </div>
+            </div>
+          </div>
+
+          <div style="display: flex; gap: 12px; margin-top: 10px">
+            <button
+              class="modal-btn"
+              style="flex: 1"
+              onclick="window.game.start('blitz')"
+            >
+              ⚡ Play Again (Blitz 90s)
+            </button>
+            <button
+              class="modal-btn"
+              style="flex: 1; background: #334155"
+              onclick="window.game.openShop()"
+            >
+              🛠️ Spend Shards
+            </button>
+          </div>
         </div>
       </div>
     </div>
 
-    <!-- Modal: Multiplier Mechanics Guide -->
-    <div class="modal-overlay" id="guideModal">
-      <div class="modal-card">
-        <h2>⚡ Multiplier System Codex</h2>
-        <p class="modal-desc">
-          In <strong>Hyper-Surge</strong>, score multipliers <em>multiply together</em> rather than just adding up!
-          Mastering every system allows you to reach <strong>100x+ to 500x+ Godlike Overdrive</strong>!
-        </p>
-
-        <div class="guide-grid">
-          <div class="guide-item">
-            <div class="guide-item-title" style="color: #38bdf8;">⚡ Combo Velocity</div>
-            <div class="guide-item-val">Up to 10.0x Multiplier</div>
-            <div class="guide-item-text">
-              Each hit adds +0.25x. Keep hitting targets before the decay bar empties to maintain your streak!
-            </div>
-          </div>
-
-          <div class="guide-item">
-            <div class="guide-item-title" style="color: #f43f5e;">🌀 Danger Vortex Zones</div>
-            <div class="guide-item-val">2.5x - 4.0x Multiplier</div>
-            <div class="guide-item-text">
-              High-risk glowing arenas. Enter the red or gold vortex fields to multiply all points scored while inside!
-            </div>
-          </div>
-
-          <div class="guide-item">
-            <div class="guide-item-title" style="color: #10b981;">🔄 Ricochet Wall Bounces</div>
-            <div class="guide-item-val">+0.5x per Bounce</div>
-            <div class="guide-item-text">
-              Your energy bolts ricochet off the perimeter borders. Trick shots that hit after bouncing grant stacking bounce multipliers!
-            </div>
-          </div>
-
-          <div class="guide-item">
-            <div class="guide-item-title" style="color: #fbbf24;">🎯 Bullseye Precision</div>
-            <div class="guide-item-val">2.0x - 3.5x Multiplier</div>
-            <div class="guide-item-text">
-              Strike the glowing white core in the exact center of any target to trigger a critical bullseye score explosion!
-            </div>
-          </div>
-
-          <div class="guide-item">
-            <div class="guide-item-title" style="color: #c084fc;">💎 Color Harmony Chain</div>
-            <div class="guide-item-val">Up to 4.0x Multiplier</div>
-            <div class="guide-item-text">
-              Destroy matching color targets in sequence (Cyan, Void, Amber) or hit rare Rainbow Prisms for instant maximum harmony!
-            </div>
-          </div>
-
-          <div class="guide-item">
-            <div class="guide-item-title" style="color: #f59e0b;">🚀 Overdrive Surge Cores</div>
-            <div class="guide-item-val">2x, 3x, 5x Supernova</div>
-            <div class="guide-item-text">
-              Collect floating cores to unleash temporary hyper multipliers with full audio-visual screen overload.
-            </div>
-          </div>
-        </div>
-
-        <button class="modal-btn" onclick="window.game.closeGuide()">Resume Game</button>
-      </div>
-    </div>
-
-    <!-- Modal: Multiplier Upgrades & Perk Shop -->
-    <div class="modal-overlay" id="shopModal">
-      <div class="modal-card">
-        <div style="display: flex; justify-content: space-between; align-items: baseline;">
-          <h2>🛠️ Multiplier Overclock Shop</h2>
-          <div style="font-family: var(--mono-stack); color: #fbbf24; font-weight: 800; font-size: 15px;">
-            💎 <span id="shopShardsVal">0</span> Shards
-          </div>
-        </div>
-        <p class="modal-desc">
-          Shards are extracted when you eliminate targets with high multiplier combos. Spend them to permanently upgrade your multiplier engines!
-        </p>
-
-        <div class="shop-items-list" id="shopList"></div>
-
-        <button class="modal-btn" onclick="window.game.closeShop()">Back to Action</button>
-      </div>
-    </div>
-
-    <!-- Modal: Game Over / Run Results -->
-    <div class="modal-overlay" id="gameOverModal">
-      <div class="modal-card" style="text-align: center;">
-        <h2>⚡ RUN COMPLETED</h2>
-        <p class="modal-desc">Multiplier overdrive cycle concluded. Here is your combat analysis:</p>
-
-        <div class="score-value" id="finalScoreVal" style="font-size: 48px; color: #38bdf8; margin: 10px 0;">0</div>
-
-        <div class="stats-grid">
-          <div class="stat-box">
-            <div class="stat-label">Peak Multiplier</div>
-            <div class="stat-val" id="finalMaxMult" style="color: #f43f5e;">1.0x</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Critical Crits</div>
-            <div class="stat-val" id="finalCrits" style="color: #fbbf24;">0</div>
-          </div>
-          <div class="stat-box">
-            <div class="stat-label">Ricochet Hits</div>
-            <div class="stat-val" id="finalBounces" style="color: #10b981;">0</div>
-          </div>
-        </div>
-
-        <div style="display: flex; gap: 12px; margin-top: 10px;">
-          <button class="modal-btn" style="flex: 1;" onclick="window.game.start('blitz')">⚡ Play Again (Blitz 90s)</button>
-          <button class="modal-btn" style="flex: 1; background: #334155;" onclick="window.game.openShop()">🛠️ Spend Shards</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script src="audio.js"></script>
-  <script src="game.js"></script>
-</body>
+    <script src="audio.js"></script>
+    <script src="game.js"></script>
+  </body>
 </html>
